@@ -11,4 +11,5 @@ import com.paypay.model.PaymentData;
 public interface PaymentRepository extends JpaRepository<PaymentData, BigDecimal> {
     
     PaymentData findByVaNumber(String vaNumber);
+    PaymentData findByIdPayment(BigDecimal idPayment);
 }

@@ -1,5 +1,6 @@
 package com.paypay.service.impl;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -13,9 +14,12 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paypay.Exception.BadRequestException;
 import com.paypay.constant.VariableConstant;
+import com.paypay.dto.Request.InquiryPaymentRequest;
+import com.paypay.dto.Request.UpdateStatusPaymentRequest;
 import com.paypay.dto.Response.Response;
 import com.paypay.dto.Response.ResponseInquiryPayment;
 import com.paypay.dto.Response.ResponseInquiryTransaction;
+import com.paypay.dto.Response.ResponsePaymentStatus;
 import com.paypay.model.PaymentData;
 import com.paypay.repository.PaymentRepository;
 
@@ -72,7 +76,7 @@ public class PaymentImpl {
 
         } else {
             ResponseInquiryPayment responseInquiryPayment = new ResponseInquiryPayment();
-            String[] currencys =  transactionData.getCurrencyPair().split("\\/");
+            String[] currencys = transactionData.getCurrencyPair().split("\\/");
             responseInquiryPayment.setIdTransaction(transactionData.getIdTransaction());
             responseInquiryPayment.setDestinationAccount(transactionData.getDestinationAccount());
             responseInquiryPayment.setLastUpdate(today);
@@ -106,6 +110,7 @@ public class PaymentImpl {
             }
 
             paymentRepository.save(paymentData);
+            responseInquiryPayment.setIdPayment(paymentData.getIdPayment());
             return responseInquiryPayment;
         }
 
@@ -125,12 +130,32 @@ public class PaymentImpl {
         return inquiryData;
     }
 
-    // public ResponseInquiryPayment inquiryPayment(String vaNumber) throws Exception {
-    //     // Get data payment if exist
-    //     PaymentData paymentDb = paymentRepository.findByVaNumber(vaNumber);
-        
-    //     }
+    public Response updateStatusPayment(UpdateStatusPaymentRequest request) throws Exception {
+        // Get data payment if exist
+        LocalDateTime today = LocalDateTime.now();
+        PaymentData paymentDb = paymentRepository.findByIdPayment(request.getIdPayment());
+        if(paymentDb == null){
+            throw new BadRequestException("Data Payment tidak di temukan");
+        }
+        paymentDb.setPaymentStatus(request.getPaymentStatus());
+        paymentDb.setLastUpdate(today);
+        paymentRepository.save(paymentDb);
+        return response = new Response(variableConstant.getSTATUS_OK(), "Success, Update Payment Status", paymentDb);
 
-    // }
+    }
+
+    public Response inquiryPaymentStatus(InquiryPaymentRequest request) throws Exception {
+        // Get data payment if exist
+        PaymentData paymentDataDB = paymentRepository.findByVaNumber(request.getVaNumber());
+        if(paymentDataDB == null){
+            throw new BadRequestException("Data payment tidak ditemukan");
+        }
+        ResponsePaymentStatus responsePaymentStatus = new ResponsePaymentStatus();
+        responsePaymentStatus.setPaymentStatus(paymentDataDB.getPaymentStatus());
+        responsePaymentStatus.setVaNumber(paymentDataDB.getVaNumber());
+
+        return response = new Response(variableConstant.getSTATUS_OK(), "Success Recon", responsePaymentStatus);
+
+    }
 
 }
