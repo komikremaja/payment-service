@@ -1,6 +1,7 @@
 package com.paypay.service.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -72,6 +73,11 @@ public class PaymentImpl {
             }
 
             ResponseInquiryPayment responseInquiryPayment = mapper.map(paymentDb, ResponseInquiryPayment.class);
+            if (transactionData.getTypeTransaction().equals("B")) {
+                responseInquiryPayment.setKreditAmount(transactionData.getAmount2().setScale(2, RoundingMode.HALF_UP));
+            } else {
+                responseInquiryPayment.setKreditAmount(transactionData.getAmount1().setScale(2, RoundingMode.HALF_UP));
+            }
             return responseInquiryPayment;
 
         } else {
@@ -85,11 +91,13 @@ public class PaymentImpl {
             responseInquiryPayment.setVaNumber(transactionData.getVaNumber());
             responseInquiryPayment.setPaymentStatus("1");
             if (transactionData.getTypeTransaction().equals("B")) {
-                responseInquiryPayment.setTotalAmount(transactionData.getAmount2());
-                responseInquiryPayment.setCurrency(currencys[1]);
-            } else {
-                responseInquiryPayment.setTotalAmount(transactionData.getAmount1());
+                responseInquiryPayment.setTotalAmount(transactionData.getAmount1().setScale(2, RoundingMode.HALF_UP));
+                responseInquiryPayment.setKreditAmount(transactionData.getAmount2().setScale(2, RoundingMode.HALF_UP));
                 responseInquiryPayment.setCurrency(currencys[0]);
+            } else {
+                responseInquiryPayment.setTotalAmount(transactionData.getAmount2().setScale(2, RoundingMode.HALF_UP));
+                responseInquiryPayment.setKreditAmount(transactionData.getAmount1().setScale(2, RoundingMode.HALF_UP));
+                responseInquiryPayment.setCurrency(currencys[1]);
             }
             PaymentData paymentData = mapper.map(responseInquiryPayment, PaymentData.class);
             try {
@@ -134,7 +142,7 @@ public class PaymentImpl {
         // Get data payment if exist
         LocalDateTime today = LocalDateTime.now();
         PaymentData paymentDb = paymentRepository.findByIdPayment(request.getIdPayment());
-        if(paymentDb == null){
+        if (paymentDb == null) {
             throw new BadRequestException("Data Payment tidak di temukan");
         }
         paymentDb.setPaymentStatus(request.getPaymentStatus());
@@ -147,7 +155,7 @@ public class PaymentImpl {
     public Response inquiryPaymentStatus(InquiryPaymentRequest request) throws Exception {
         // Get data payment if exist
         PaymentData paymentDataDB = paymentRepository.findByVaNumber(request.getVaNumber());
-        if(paymentDataDB == null){
+        if (paymentDataDB == null) {
             throw new BadRequestException("Data payment tidak ditemukan");
         }
         ResponsePaymentStatus responsePaymentStatus = new ResponsePaymentStatus();

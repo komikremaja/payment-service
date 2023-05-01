@@ -17,6 +17,8 @@ public class ResponseInquiryPayment {
     private String vaNumber;
     
     private BigDecimal totalAmount;
+
+    private BigDecimal kreditAmount;
     
     private String sourceAccount;
 
