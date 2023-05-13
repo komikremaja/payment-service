@@ -44,7 +44,7 @@ public class PaymentImpl {
     private ObjectMapper objectMapper;
 
     public ResponseInquiryPayment inquiryPayment(String vaNumber) throws Exception {
-        // Get data payment if exist
+        // Get data payment if exist 
         PaymentData paymentDb = paymentRepository.findByVaNumber(vaNumber);
         ResponseInquiryTransaction transactionData = inquiryTransaction(vaNumber);
         LocalDateTime today = LocalDateTime.now();
@@ -147,6 +147,8 @@ public class PaymentImpl {
         }
         paymentDb.setPaymentStatus(request.getPaymentStatus());
         paymentDb.setLastUpdate(today);
+        paymentDb.setBankPayment(request.getBankPayment());
+        paymentDb.setSourceAccount(request.getSourceAccount());
         paymentRepository.save(paymentDb);
         return response = new Response(variableConstant.getSTATUS_OK(), "Success, Update Payment Status", paymentDb);
 

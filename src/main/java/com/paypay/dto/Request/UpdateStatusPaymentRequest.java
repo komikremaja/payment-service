@@ -9,4 +9,6 @@ public class UpdateStatusPaymentRequest {
     
     private BigDecimal idPayment;
     private String paymentStatus;
+    private String sourceAccount;
+    private String bankPayment;
 }
